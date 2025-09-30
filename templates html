@@ -1,0 +1,125 @@
+<!-- templates/index.html -->
+{% extends "base.html" %}
+{% block content %}
+<h1>RUET Hall Management System</h1>
+<p>Simple demo: add students and rooms, then allocate students to rooms.</p>
+<div class="grid">
+  <div class="card">
+    <h3>Quick actions</h3>
+    <ul>
+      <li><a href="/students">Manage Students</a></li>
+      <li><a href="/rooms">Manage Rooms</a></li>
+      <li><a href="/allocations">Allocations</a></li>
+    </ul>
+  </div>
+</div>
+{% endblock %}
+
+<!-- templates/students.html -->
+{% extends "base.html" %}
+{% block content %}
+<h2>Students</h2>
+
+<form action="/students/add" method="post" class="form-inline">
+  <input name="roll" placeholder="Roll" required>
+  <input name="name" placeholder="Name" required>
+  <input name="department" placeholder="Dept">
+  <button type="submit">Add Student</button>
+</form>
+
+<table>
+  <thead><tr><th>ID</th><th>Roll</th><th>Name</th><th>Dept</th></tr></thead>
+  <tbody>
+  {% for s in students %}
+    <tr>
+      <td>{{ s.id }}</td>
+      <td>{{ s.roll }}</td>
+      <td>{{ s.name }}</td>
+      <td>{{ s.department or "" }}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="4">No students yet</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
+
+<!-- templates/rooms.html -->
+{% extends "base.html" %}
+{% block content %}
+<h2>Rooms</h2>
+
+<form action="/rooms/add" method="post" class="form-inline">
+  <input name="block" placeholder="Block (A/B...)" required>
+  <input name="number" placeholder="Room No." required>
+  <input name="capacity" type="number" min="1" value="1" required>
+  <button type="submit">Add Room</button>
+</form>
+
+<table>
+  <thead><tr><th>ID</th><th>Block</th><th>Number</th><th>Capacity</th></tr></thead>
+  <tbody>
+  {% for r in rooms %}
+    <tr>
+      <td>{{ r.id }}</td>
+      <td>{{ r.block }}</td>
+      <td>{{ r.number }}</td>
+      <td>{{ r.capacity }}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="4">No rooms yet</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
+<!-- templates/allocations.html -->
+{% extends "base.html" %}
+{% block content %}
+<h2>Allocations</h2>
+
+<section class="card">
+  <h3>Allocate Student to Room</h3>
+  <form id="allocateForm">
+    <select name="student_id" id="studentSelect" required>
+      <option value="">Select student</option>
+      {% for s in students %}<option value="{{ s.id }}">{{ s.name }} ({{ s.roll }})</option>{% endfor %}
+    </select>
+
+    <select name="room_id" id="roomSelect" required>
+      <option value="">Select room</option>
+      {% for r in rooms %}<option value="{{ r.id }}">Block {{ r.block }} - {{ r.number }} (cap {{ r.capacity }})</option>{% endfor %}
+    </select>
+
+    <button type="submit">Allocate</button>
+  </form>
+  <div id="allocMsg"></div>
+</section>
+
+<section class="card">
+  <h3>Current allocations</h3>
+  <table>
+    <thead><tr><th>ID</th><th>Student</th><th>Room</th><th>Check-in</th><th>Check-out</th><th>Action</th></tr></thead>
+    <tbody id="allocTableBody">
+    {% for a in allocations %}
+      <tr data-id="{{ a.id }}">
+        <td>{{ a.id }}</td>
+        <td>{{ a.student_id }}</td>
+        <td>{{ a.room_id }}</td>
+        <td>{{ a.check_in }}</td>
+        <td>{{ a.check_out or "" }}</td>
+        <td>
+          {% if not a.check_out %}
+            <button class="checkoutBtn" data-id="{{ a.id }}">Check-out</button>
+          {% else %}
+            <em>Checked out</em>
+          {% endif %}
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="6">No allocations</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+{% endblock %}
