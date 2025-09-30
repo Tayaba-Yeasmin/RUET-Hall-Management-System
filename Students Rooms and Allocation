@@ -1,0 +1,29 @@
+# models.py
+from typing import Optional
+from sqlmodel import SQLModel, Field, Relationship
+from datetime import datetime
+
+class Allocation(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    student_id: int = Field(foreign_key="student.id")
+    room_id: int = Field(foreign_key="room.id")
+    check_in: Optional[datetime] = None
+    check_out: Optional[datetime] = None
+
+class Student(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    roll: str
+    name: str
+    department: Optional[str] = None
+    allocations: list[Allocation] = Relationship(back_populates="student")
+
+class Room(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    block: str
+    number: str
+    capacity: int = 1
+    allocations: list[Allocation] = Relationship(back_populates="room")
+
+# fix relationships (sqlmodel requires setting after classes)
+Allocation.student = Relationship(sa_relationship_kwargs={"lazy":"select"}, back_populates="allocations", sa_relationship=Student)
+Allocation.room = Relationship(sa_relationship_kwargs={"lazy":"select"}, back_populates="allocations", sa_relationship=Room)
